@@ -60,6 +60,7 @@ Shifty interface;
 
 //PINs
 #define MR_pin 6
+#define PULSEPIN A1
 
 //Roller States
 #define UP 100
@@ -99,6 +100,7 @@ int rollerdown[] = {6, 4, 2, 0, 14, 12, 10, 8};
 void before() {
   //disable watchdog timer
   MCUSR = 0;
+  pinMode(PULSEPIN, INPUT);
   Serial.begin(BAUD_RATE);
   Serial.println(F("begin"));
 
@@ -187,7 +189,7 @@ void loop()
   while (hwMillis() - loopMillis < sleep_time*1000) {
     currentMillis = hwMillis(); // assure consistent time comparitions
     _process();
-    wdt_reset();
+    heartbeat();
 
     //loop trought the rollers controls
     for (i=0;i<ROLLERS;i++) {
@@ -414,14 +416,23 @@ void receiveTime(unsigned long time) {
   timeReceived = true;
 }
 
+void heartbeat () {
+  wdt_reset();
+  pinMode(PULSEPIN, OUTPUT);
+  digitalWrite(PULSEPIN, LOW);
+  wait(5);
+  // Return to high-Z
+  pinMode(PULSEPIN, INPUT);
+}
+
 void wdsleep(unsigned long ms) {
   unsigned long enter = hwMillis();
   #if defined(MY_REPEATER_FEATURE)
   while (hwMillis() - enter < ms) {
      _process();
-    wdt_reset();
+    heartbeat ()
   }
-    wdt_reset();
+    heartbeat();
   }
   #else
     sleep(ms);
