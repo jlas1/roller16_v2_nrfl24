@@ -5,14 +5,14 @@
  */
 
 // define shift register
-//#define MY_DEBUG 
+#define MY_DEBUG 
 
 // Enable and select radio type attached
 #define MY_RADIO_NRF24
-#define MY_RF24_PA_LEVEL RF24_PA_LOW
+#define MY_RF24_PA_LEVEL RF24_PA_HIGH
 //#define MY_RADIO_RFM69
 //#define MY_IS_RFM69HWw
-//#define MY_REPEATER_NODE
+#define MY_REPEATER_FEATURE
 #define MY_NODE_ID AUTO
 //#define MY_NODE_ID 1
 
@@ -107,6 +107,8 @@ void before() {
   //setup interface library
   //disables shift master reset pin
   pinMode(MR_pin,OUTPUT);
+  digitalWrite(MR_pin,LOW);
+  delay(500);
   digitalWrite(MR_pin,HIGH);
   interface.setBitCount(ANALOG_INTERFACES);
   interface.setPins(5, 4, 3); 
@@ -430,9 +432,7 @@ void wdsleep(unsigned long ms) {
   #if defined(MY_REPEATER_FEATURE)
   while (hwMillis() - enter < ms) {
      _process();
-    heartbeat ()
-  }
-    heartbeat();
+    heartbeat ();
   }
   #else
     sleep(ms);
